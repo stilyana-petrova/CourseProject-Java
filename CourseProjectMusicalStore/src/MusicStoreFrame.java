@@ -90,6 +90,7 @@ public class MusicStoreFrame extends JFrame {
     JPanel allOrdersPanel = new JPanel(new GridLayout(1, 1));
     JTable allOrdersTable = new JTable();
     JScrollPane allOrdersScroll = new JScrollPane(allOrdersTable);
+    
 
     public MusicStoreFrame() {
         this.setSize(800, 600);
@@ -281,6 +282,8 @@ public class MusicStoreFrame extends JFrame {
         }
     }
 
+    
+    
     private void refreshAllOrdersTable() {
         conn = DBConnection.GetConnection();
         String sql = "SELECT o.id AS order_id, u.fname, u.lname, o.orderdate, o.totalprice, " +
