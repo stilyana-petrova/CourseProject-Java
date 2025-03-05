@@ -44,6 +44,9 @@ public class MusicStoreFrame extends JFrame {
     JButton deleteProductButton = new JButton("Delete Product");
     JButton editProductButton = new JButton("Edit Product");
     JButton refreshProductButton = new JButton("Refresh");
+    JTextField searchProductTF = new JTextField(10);
+    JButton searchProductButton = new JButton("Search Product");
+   
 
     JTable productTable = new JTable();
     JScrollPane productScroll = new JScrollPane(productTable);
@@ -67,7 +70,9 @@ public class MusicStoreFrame extends JFrame {
     JButton deleteUserButton = new JButton("Delete User");
     JButton editUserButton = new JButton("Edit User");
     JButton refreshUserButton = new JButton("Refresh");
-
+    JTextField searchUserTF = new JTextField(10);
+    JButton searchUserButton = new JButton("Search User");
+    
     JTable usersTable = new JTable();
     JScrollPane usersScroll = new JScrollPane(usersTable);
 
@@ -90,7 +95,8 @@ public class MusicStoreFrame extends JFrame {
     JPanel allOrdersPanel = new JPanel(new GridLayout(1, 1));
     JTable allOrdersTable = new JTable();
     JScrollPane allOrdersScroll = new JScrollPane(allOrdersTable);
-    
+    JButton refreshAllOrdersButton = new JButton("Refresh All Orders");
+
 
     public MusicStoreFrame() {
         this.setSize(800, 600);
@@ -129,6 +135,9 @@ public class MusicStoreFrame extends JFrame {
 
         createOrderButton.addActionListener(new CreateOrderAction());
         refreshOrdersButton.addActionListener(new RefreshOrdersAction());
+        
+        searchProductButton.addActionListener(new SearchProductAction());
+        searchUserButton.addActionListener(new SearchUserAction());
 
         // Refresh Tables
         refreshProductTable();
@@ -156,6 +165,8 @@ public class MusicStoreFrame extends JFrame {
         productMidPanel.add(deleteProductButton);
         productMidPanel.add(editProductButton);
         productMidPanel.add(refreshProductButton);
+        productMidPanel.add(searchProductTF);
+        productMidPanel.add(searchProductButton);
 
         // Lower Panel (Table)
         productDownPanel.add(productScroll);
@@ -181,6 +192,8 @@ public class MusicStoreFrame extends JFrame {
         usersMidPanel.add(deleteUserButton);
         usersMidPanel.add(editUserButton);
         usersMidPanel.add(refreshUserButton);
+        usersMidPanel.add(searchUserTF);
+        usersMidPanel.add(searchUserButton);
 
         // Lower Panel (Table)
         usersDownPanel.add(usersScroll);
@@ -213,8 +226,19 @@ public class MusicStoreFrame extends JFrame {
     }
 
     private void setupAllOrdersPanel() {
+        allOrdersScroll.setPreferredSize(new Dimension(750, 400));
+        
+        allOrdersPanel.setLayout(new GridLayout(2, 1));  // Changed to 2 rows for button and table
         allOrdersPanel.add(allOrdersScroll);
         allOrdersScroll.setPreferredSize(new Dimension(750, 400));
+
+        JPanel refreshPanel = new JPanel();
+        refreshPanel.add(refreshAllOrdersButton);
+        
+        allOrdersPanel.add(refreshPanel);
+
+        refreshAllOrdersButton.addActionListener(new RefreshAllOrdersAction());
+
         refreshAllOrdersTable();
     }
 
@@ -307,6 +331,7 @@ public class MusicStoreFrame extends JFrame {
         }
     }
 
+    
     private void clearProductForm() {
         productNameTF.setText("");
         productPriceTF.setText("");
@@ -393,6 +418,26 @@ public class MusicStoreFrame extends JFrame {
             clearProductForm();
         }
     }
+    
+    class SearchProductAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String searchText = searchProductTF.getText();
+            conn = DBConnection.GetConnection();
+            String sql = "SELECT * FROM product WHERE name LIKE ?";
+            try {
+                state = conn.prepareStatement(sql);
+                state.setString(1, "%" + searchText + "%");
+                result = state.executeQuery();
+                productTable.setModel(new MyModel(result));
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+        }
+    }
 
     class AddUserAction implements ActionListener {
         @Override
@@ -463,6 +508,27 @@ public class MusicStoreFrame extends JFrame {
         public void actionPerformed(ActionEvent e) {
             refreshUsersTable();
             clearUserForm();
+        }
+    }
+    
+    class SearchUserAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String searchText = searchUserTF.getText();
+            conn = DBConnection.GetConnection();
+            String sql = "SELECT * FROM users WHERE fname LIKE ? OR lname LIKE ?";
+            try {
+                state = conn.prepareStatement(sql);
+                state.setString(1, "%" + searchText + "%");
+                state.setString(2, "%" + searchText + "%");
+                result = state.executeQuery();
+                usersTable.setModel(new MyModel(result));
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
         }
     }
 
@@ -537,5 +603,11 @@ public class MusicStoreFrame extends JFrame {
         }
     }
 
+    class RefreshAllOrdersAction implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            refreshAllOrdersTable(); // Refresh the table when the button is clicked
+        }
+    }
 
 }
